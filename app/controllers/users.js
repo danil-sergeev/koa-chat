@@ -16,7 +16,7 @@ export const getAllUsers = () => {
         });
 };
 
-const getUserDataById = (userId) => {
+export const getUserDataById = (userId) => {
     return User.findById(userId)
         .select('username firstName lastName')
         .lean()
@@ -45,27 +45,26 @@ export const getUserInfo = (userId) => {
         getUserChatsById(userId),
         getUserMessagesCountById(userId)
     ];
-
-    return Promise.all([userPromises])
-        .then(([user, chats, messagesCount]) => {
-            if (!user) {
-                return Promise.rejects(
-                    {
-                        success: false,
-                        message: `User hasn't been found`
-                    }
-                );
-            };
-
-            return Promise.resolve(
+    console.log('kek')
+    return Promise.all([userPromises]).then(([user, chats, messagesCount]) => {
+        console.log('внутри промисов', user);
+        if (!user) {
+            return Promise.reject(
                 {
-                    success: true,
-                    user: Object.assign({}, user, { chats, messagesCount }),
+                    success: false,
+                    message: `User hasn't been found`
                 }
             );
+        };
+
+        return Promise.resolve(
+            {
+                success: true,
+                user: Object.assign({}, user, { chats, messagesCount }),
+            }
+        );
         });
 };
-
 
 export const editUser = (userId, data) => {
     if (!data) return Promise.reject({success: false, message: `Data haven't been provided`});

@@ -3,15 +3,15 @@ import Router from 'koa-router';
 import logger from 'koa-logger';
 import bodyParser from 'koa-bodyparser';
 import passport from 'koa-passport';
+import jwtMiddleware from 'koa-jwt';
 import http from 'http';
 import mongoose from 'mongoose';
 
 import {url, databaseOptions} from './config/database'
-import {JWTPassport} from './config/passport'
+import {jwtsecret} from './config/jwt';
 import {Users} from './routes';
 
 
-JWTPassport(passport);
 
 mongoose.Promise = Promise;
 mongoose.connect(url, databaseOptions)
@@ -32,4 +32,9 @@ server.listen(7000);
 //routes
 const apiRouter = new Router({prefix: '/api/v1'});
 Users(apiRouter);
+apiRouter.use(
+    jwtMiddleware({
+        secret: jwtsecret,
+    })
+);
 app.use(apiRouter.routes());
