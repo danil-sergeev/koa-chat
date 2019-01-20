@@ -7,8 +7,8 @@ import http from 'http';
 import mongoose from 'mongoose';
 
 import router from './routes';
-import { url, databaseOptions } from './config/database';s
-import { socketIO } from './middlewares/sockeMiddleware';
+import { url, databaseOptions } from './config/database';
+import { socketIO } from './middlewares/socketMiddleware';
 
 // Open MongoDB connection
 mongoose.Promise = Promise;
