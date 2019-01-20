@@ -1,40 +1,41 @@
 import Koa from 'koa';
-import Router from 'koa-router';
 import logger from 'koa-logger';
 import bodyParser from 'koa-bodyparser';
-import passport from 'koa-passport';
-import jwtMiddleware from 'koa-jwt';
+import cors from 'cors';
+import SocketIOServer from 'socket.io';
 import http from 'http';
 import mongoose from 'mongoose';
 
-import {url, databaseOptions} from './config/database'
-import {jwtsecret} from './config/jwt';
-import {Users} from './routes';
+import router from './routes';
+import { url, databaseOptions } from './config/database';s
+import { socketIO } from './middlewares/sockeMiddleware';
 
-
-
+// Open MongoDB connection
 mongoose.Promise = Promise;
-mongoose.connect(url, databaseOptions)
-mongoose.connection.once('open', function() {
-    console.log('Connected to database with url', url)
-})
+mongoose.connect(url, databaseOptions);
+const db = mongoose.connection;
 
+db.on('error', (err) => {
+	console.error('Database connection error:', err);
+});
 
+db.once('open', () => {
+	console.log('Database connected.');
+});
+
+// Create servers
 const app = new Koa();
+const server = http.createServer(app.callback());
+const io = SocketIOServer(server);
 
+// Middlewares
 app.use(logger());
 app.use(bodyParser());
-app.use(passport.initialize());
+app.use(cors());
+app.use(socketIO(io));
 
-const server = http.createServer(app.callback());
-server.listen(7000);
+app.use(router.routes());
 
-//routes
-const apiRouter = new Router({prefix: '/api/v1'});
-Users(apiRouter);
-apiRouter.use(
-    jwtMiddleware({
-        secret: jwtsecret,
-    })
-);
-app.use(apiRouter.routes());
+server.listen(8000);
+
+// Routes
